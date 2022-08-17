@@ -1,5 +1,5 @@
 import os
-from ..settings import initializeLogger, BASE_DIR
+from ..settings import initializeLogger, ROOT_LOG_DIR
 
 
 agents = (
@@ -26,4 +26,4 @@ base_headers = {
 }
 
 
-logger = initializeLogger("spider", os.path.join(BASE_DIR, "crawl"))
+logger = initializeLogger("spider", os.path.join(ROOT_LOG_DIR, "crawl"))
