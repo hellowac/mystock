@@ -56,14 +56,14 @@ class TradeCrawl(CrawlBase):
         # 按行业分类查询
         for category in soup.find_all("div", class_="category"):
 
-            title = category.find("div", class_="c_title").get_text()
+            title = category.find("div", class_="c_title").get_text().strip()
             trade_category[title] = []
 
             # 各个a标签的text
             for trade in category.find_all("a"):
 
                 trade_code = trade["name"]  # name属性
-                trade_name = trade.get_text()
+                trade_name = trade.get_text().strip()
 
                 # 该行业下各个股票, 也就是 http://basic.10jqka.com.cn + href
                 trade_href = trade["href"]
@@ -170,3 +170,49 @@ class StockCompanyInfoCrawl(CrawlBase):
             attrs[attr_name] = attr_value
 
         return attrs
+
+
+class ArticleCrawl(object):
+    def __init__(self) -> None:
+
+        self.haders = base_headers.copy()
+        self.haders["User-Agent"] = random.choice(agents)
+        self.haders["Host"] = "xueqiu.com"
+
+        # 构造session
+        self.session: Session = Session()
+        self.session.headers = CaseInsensitiveDict(self.haders)
+
+    def crawl(self):
+
+        url = "https://xueqiu.com/8906400442/228745953"
+
+        resp: Response = self.session.get(url, verify=False)
+
+        if resp.status_code != 200:
+            logger.info(f"爬取文章错误, CODE[{resp.status_code}]: {resp.text}")
+            return
+
+        # logger.info(resp.text)
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # 解析详细情况
+
+        p_elements = soup.find("div", class_="article__bd__detail").find_all("p")
+
+        line_texts = []
+
+        for p in p_elements:
+
+            line_text = p.get_text()
+
+            for a in p.find_all("a"):
+                a_text = a.get_text()
+                href = a["href"]
+
+                line_text = line_text.replace(a_text, f"[{a_text}]({href})")
+
+            line_texts.append(line_text)
+
+        return line_texts

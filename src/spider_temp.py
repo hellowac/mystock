@@ -1,27 +1,48 @@
+import time
 import json
-from app.crawl.spider.ths import TradeCrawl, TradeStockCrawl, StockCompanyInfoCrawl
+from app.crawl.spider.ths import (
+    TradeCrawl,
+    TradeStockCrawl,
+    StockCompanyInfoCrawl,
+    ArticleCrawl,
+)
 
 
-if __name__ == "__main__":
+def crawl_ths_category_stock():
+    # 爬同花顺各个分类行业股票
 
-    # trades = TradeCrawl().crawl()
+    trades = TradeCrawl().crawl()
 
-    # print(json.dumps(trades, ensure_ascii=False))
+    print(json.dumps(trades, ensure_ascii=False))
 
-    # stock_crawler = TradeStockCrawl()
+    stock_crawler = TradeStockCrawl()
 
-    # stocks = []
+    for category, trades in trades.items():
 
-    # for category, trades in trades.items():
+        with open(f"{category}.md", "w") as fw:
+            fw.write(f"## {category}\n\n")
 
-    #     for trade in trades:
+            for trade in trades:
+                fw.write(f"### {trade['name']}\n\n")
 
-    #         stocks.extend(stock_crawler.crawl(trade["name"], trade["href"]))
+                stocks = stock_crawler.crawl(trade["name"], trade["href"])
 
-    #         break  # 只爬第一个行业
+                for stock in stocks:
+                    fw.write(
+                        f"- [{stock['name']}](http://stockpage.10jqka.com.cn/{stock['code']}/)\n"
+                    )
 
-    #     break  # 只爬第一个分类
+                fw.write("\n")
+
+                print(f"抓取完同花顺分类: {category} - {trade['name']}")
+
+                time.sleep(0.5)
+
     # print(json.dumps(stocks, ensure_ascii=False))
+
+
+def crawl_ths_stock_info():
+    # 爬同花顺股票详细
 
     stocks = [
         {"code": "000020", "name": "深华发A", "href": "/000020/"},
@@ -66,3 +87,18 @@ if __name__ == "__main__":
         break  # 只爬第一个公司
 
     print(json.dumps(stock_info, ensure_ascii=False))
+
+
+def crawl_xueqiu_article():
+    # 爬取雪球文章
+
+    crawler = ArticleCrawl()
+
+    texts = crawler.crawl()
+
+    print("\n".join(texts))
+
+
+if __name__ == "__main__":
+
+    crawl_ths_category_stock()
